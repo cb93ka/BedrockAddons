@@ -53,5 +53,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete latest -y --cleanup-tag || true
-          gh release create latest BedrockAddons.ipa --title "Сборка ${{ github.run_number }}" \
-            --notes "Коммит ${GITHUB_SHA::7}. Неподписанная IPA для LiveContainer." --latest
+          gh release create latest BedrockAddons.ipa --title "Build ${{ github.run_number }}" \
+            --notes "Commit ${GITHUB_SHA::7}. Unsigned IPA for LiveContainer." --latest
