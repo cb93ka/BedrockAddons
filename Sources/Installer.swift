@@ -17,11 +17,11 @@ enum PackKind: String {
 
     var title: String {
         switch self {
-        case .resource: return "ресурс-пак"
-        case .behavior: return "пак поведения"
-        case .skin: return "скин-пак"
-        case .worldTemplate: return "шаблон мира"
-        case .world: return "мир"
+        case .resource: return String(localized: "resource pack")
+        case .behavior: return String(localized: "behavior pack")
+        case .skin: return String(localized: "skin pack")
+        case .worldTemplate: return String(localized: "world template")
+        case .world: return String(localized: "world")
         }
     }
 }
@@ -53,7 +53,7 @@ struct Manifest {
         guard let json = try JSONSerialization.jsonObject(with: data, options: [.json5Allowed]) as? [String: Any],
               let header = json["header"] as? [String: Any],
               let uuid = header["uuid"] as? String else {
-            throw InstallError(message: "manifest.json без header.uuid")
+            throw InstallError(message: "manifest.json has no header.uuid")
         }
         let types = (json["modules"] as? [[String: Any]] ?? []).compactMap { $0["type"] as? String }.map { $0.lowercased() }
         let kind: PackKind?
@@ -107,8 +107,9 @@ final class AddonInstaller {
         var skipped: [String] = []
         try visit(work, items: &items, skipped: &skipped)
         if items.isEmpty {
-            let reason = skipped.isEmpty ? "" : " (пропущено: \(skipped.joined(separator: ", ")))"
-            throw InstallError(message: "Внутри нет ни одного пака или мира\(reason)")
+            throw InstallError(message: skipped.isEmpty
+                ? String(localized: "No packs or worlds inside")
+                : String(localized: "No packs or worlds inside (skipped: \(skipped.joined(separator: ", ")))"))
         }
         return items
     }
@@ -120,7 +121,7 @@ final class AddonInstaller {
         do {
             archive = try Archive(url: archiveURL, accessMode: .read, pathEncoding: nil)
         } catch {
-            throw InstallError(message: "Не ZIP-архив или файл повреждён")
+            throw InstallError(message: String(localized: "Not a ZIP archive, or the file is damaged"))
         }
         try fm.createDirectory(at: destination, withIntermediateDirectories: true)
         for entry in archive {
@@ -168,11 +169,11 @@ final class AddonInstaller {
             do {
                 manifest = try Manifest.read(manifestURL)
             } catch {
-                skipped.append("\(dir.lastPathComponent): битый manifest.json")
+                skipped.append(String(localized: "\(dir.lastPathComponent): broken manifest.json"))
                 return
             }
             guard let kind = manifest.kind else {
-                skipped.append("\(dir.lastPathComponent): неизвестный тип пака")
+                skipped.append(String(localized: "\(dir.lastPathComponent): unknown pack type"))
                 return
             }
             items.append(try installPack(dir, manifest: manifest, kind: kind))
@@ -268,7 +269,7 @@ final class AddonInstaller {
             if !clean.isEmpty { return clean }
         }
         let base = fallback.lastPathComponent.replacingOccurrences(of: ".unpacked", with: "")
-        return base.hasPrefix("unpack-") ? "Без названия" : base
+        return base.hasPrefix("unpack-") ? String(localized: "Untitled") : base
     }
 
     private func folderName(_ name: String) -> String {

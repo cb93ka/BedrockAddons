@@ -1,6 +1,6 @@
 # Bedrock Addons
 
-An iOS app for LiveContainer that installs Minecraft Bedrock addons in bulk.
+An iOS app for LiveContainer that installs Minecraft Bedrock addons in bulk. The interface is in English and Russian (follows the device language).
 
 1. Install `BedrockAddons.ipa` from the [latest release](../../releases/latest) into the same LiveContainer that runs Minecraft.
 2. Tap **Find automatically** to locate Minecraft's `games/com.mojang` folder, or pick it by hand:

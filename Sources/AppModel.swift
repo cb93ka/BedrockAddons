@@ -51,7 +51,7 @@ final class AppModel: ObservableObject {
         let found = MinecraftFolder.autoDetect()
         switch found.count {
         case 0:
-            message = "Папку Minecraft не нашёл. Запусти Minecraft в LiveContainer хотя бы раз или выбери папку вручную."
+            message = String(localized: "Minecraft folder not found. Launch Minecraft in LiveContainer at least once, or pick the folder manually.")
         case 1:
             setFolder(found[0])
         default:
@@ -64,7 +64,7 @@ final class AppModel: ObservableObject {
         let found = MinecraftFolder.resolve(url)
         switch found.count {
         case 0:
-            message = "В «\(url.lastPathComponent)» нет games/com.mojang. Выбери папку com.mojang или любую папку выше неё."
+            message = String(localized: "“\(url.lastPathComponent)” has no games/com.mojang inside. Pick the com.mojang folder or any folder above it.")
         case 1:
             setFolder(found[0])
         default:
@@ -109,7 +109,7 @@ final class AppModel: ObservableObject {
             defer { if scoped { url.stopAccessingSecurityScopedResource() } }
             let name = url.lastPathComponent
             guard AddonInstaller.archiveExtensions.contains(url.pathExtension.lowercased()) else {
-                files.append(QueuedFile(name: name, localURL: url, status: .failed("Не аддон: нужен .mcpack, .mcaddon, .mcworld, .mctemplate или .zip")))
+                files.append(QueuedFile(name: name, localURL: url, status: .failed(String(localized: "Not an addon: expected .mcpack, .mcaddon, .mcworld, .mctemplate or .zip"))))
                 continue
             }
             // Picked files are only readable while the picker's grant lasts, so keep a copy.
@@ -119,7 +119,7 @@ final class AppModel: ObservableObject {
                 try FileManager.default.copyItem(at: url, to: copy)
                 files.append(QueuedFile(name: name, localURL: copy))
             } catch {
-                files.append(QueuedFile(name: name, localURL: url, status: .failed("Не удалось прочитать: \(error.localizedDescription)")))
+                files.append(QueuedFile(name: name, localURL: url, status: .failed(String(localized: "Couldn’t read the file: \(error.localizedDescription)"))))
             }
         }
     }
@@ -175,8 +175,8 @@ final class AppModel: ObservableObject {
             isInstalling = false
             refreshFolder()
             message = failed == 0
-                ? "Готово: установлено \(installed). Перезапусти Minecraft, если он был открыт."
-                : "Установлено \(installed), с ошибкой файлов: \(failed). Подробности в списке."
+                ? String(localized: "Done, installed: \(installed). Restart Minecraft if it was open.")
+                : String(localized: "Installed: \(installed). Files with errors: \(failed). See the list for details.")
         }
     }
 

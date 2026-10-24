@@ -17,7 +17,7 @@ struct ContentView: View {
                 optionsSection
                 installSection
             }
-            .navigationTitle("Аддоны Bedrock")
+            .navigationTitle("Bedrock Addons")
             .fileImporter(
                 isPresented: Binding(get: { importer != nil }, set: { if !$0 { importer = nil } }),
                 allowedContentTypes: importer == .folder ? [.folder] : [.item],
@@ -32,14 +32,14 @@ struct ContentView: View {
                     model.addFiles(urls)
                 }
             }
-            .confirmationDialog("Нашлось несколько папок Minecraft", isPresented: Binding(
+            .confirmationDialog("Several Minecraft folders found", isPresented: Binding(
                 get: { !model.folderChoices.isEmpty }, set: { if !$0 { model.folderChoices = [] } }
             ), titleVisibility: .visible) {
                 ForEach(model.folderChoices, id: \.self) { url in
                     Button(MinecraftFolder.label(for: url) + worldsHint(url)) { model.setFolder(url) }
                 }
             }
-            .alert("Аддоны Bedrock", isPresented: Binding(
+            .alert("Bedrock Addons", isPresented: Binding(
                 get: { model.message != nil }, set: { if !$0 { model.message = nil } }
             )) {
                 Button("OK", role: .cancel) {}
@@ -52,7 +52,7 @@ struct ContentView: View {
 
     private func worldsHint(_ url: URL) -> String {
         let n = MinecraftFolder.stats(url).worlds
-        return n > 0 ? " — миров: \(n)" : ""
+        return n > 0 ? String(localized: " — worlds: \(n)") : ""
     }
 
     // MARK: Sections
@@ -61,33 +61,33 @@ struct ContentView: View {
         Section {
             if let folder = model.folder {
                 VStack(alignment: .leading, spacing: 4) {
-                    Label("Папка выбрана", systemImage: "checkmark.circle.fill")
+                    Label("Folder selected", systemImage: "checkmark.circle.fill")
                         .foregroundColor(.green)
                     Text(MinecraftFolder.label(for: folder))
                         .font(.caption.monospaced())
                         .foregroundColor(.secondary)
-                    Text("Ресурс-паков: \(model.stats.resource) · поведения: \(model.stats.behavior) · миров: \(model.stats.worlds)")
+                    Text("Resource packs: \(model.stats.resource) · behavior packs: \(model.stats.behavior) · worlds: \(model.stats.worlds)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             } else {
-                Label("Папка Minecraft не выбрана", systemImage: "exclamationmark.triangle.fill")
+                Label("Minecraft folder not selected", systemImage: "exclamationmark.triangle.fill")
                     .foregroundColor(.orange)
             }
             Button {
                 model.autoDetect()
             } label: {
-                Label("Найти автоматически", systemImage: "magnifyingglass")
+                Label("Find automatically", systemImage: "magnifyingglass")
             }
             Button {
                 importer = .folder
             } label: {
-                Label("Выбрать папку вручную…", systemImage: "folder")
+                Label("Pick folder manually…", systemImage: "folder")
             }
         } header: {
-            Text("Папка Minecraft")
+            Text("Minecraft folder")
         } footer: {
-            Text("Поиск работает, когда Minecraft и это приложение стоят в одном LiveContainer. Вручную: Файлы → LiveContainer → Data → Application → папка Minecraft → Documents → games → com.mojang. Подойдёт и любая папка выше: com.mojang найдётся сам.")
+            Text("Automatic search works when Minecraft and this app are in the same LiveContainer. Manually: Files → LiveContainer → Data → Application → Minecraft’s folder → Documents → games → com.mojang. Any folder above it works too, com.mojang is found inside.")
         }
     }
 
@@ -100,27 +100,27 @@ struct ContentView: View {
             Button {
                 importer = .files
             } label: {
-                Label("Добавить файлы…", systemImage: "plus.circle.fill")
+                Label("Add files…", systemImage: "plus.circle.fill")
             }
             .disabled(model.isInstalling)
             if model.files.contains(where: { if case .done = $0.status { return true } else { return false } }) {
-                Button("Убрать установленные из списка") { model.clearFinished() }
+                Button("Remove installed from the list") { model.clearFinished() }
                     .disabled(model.isInstalling)
             }
         } header: {
-            Text("Аддоны")
+            Text("Addons")
         } footer: {
-            Text(".mcpack, .mcaddon, .mcworld, .mctemplate или .zip, можно сразу несколько. Если пак уже стоит, его обновлённая версия заменит старую.")
+            Text(".mcpack, .mcaddon, .mcworld, .mctemplate or .zip, several at once. If a pack is already installed, the new version replaces it.")
         }
     }
 
     private var optionsSection: some View {
         Section {
-            Toggle("Включить ресурс-паки сразу", isOn: $model.enableGlobally)
-            Toggle("Подключить к мирам", isOn: $model.attachToWorlds)
+            Toggle("Enable resource packs right away", isOn: $model.enableGlobally)
+            Toggle("Attach to worlds", isOn: $model.attachToWorlds)
             if model.attachToWorlds {
                 if model.worlds.isEmpty {
-                    Text("Миров пока нет").foregroundColor(.secondary)
+                    Text("No worlds yet").foregroundColor(.secondary)
                 }
                 ForEach(model.worlds) { world in
                     Button {
@@ -141,9 +141,9 @@ struct ContentView: View {
                 }
             }
         } header: {
-            Text("После установки")
+            Text("After installing")
         } footer: {
-            Text("«Включить сразу» добавляет ресурс-паки в глобальные ресурсы игры. «Подключить к мирам» добавляет ресурс-паки и паки поведения в отмеченные миры. Для паков со скриптами в настройках мира может понадобиться включить экспериментальные функции.")
+            Text("“Enable right away” adds resource packs to the game’s global resources. “Attach to worlds” adds resource and behavior packs to the checked worlds. Script packs may also need experimental features turned on in the world settings.")
         }
     }
 
@@ -156,10 +156,10 @@ struct ContentView: View {
                     Spacer()
                     if model.isInstalling {
                         ProgressView().padding(.trailing, 6)
-                        Text("Устанавливаю…")
+                        Text("Installing…")
                     } else {
                         Image(systemName: "square.and.arrow.down.fill")
-                        Text("Установить")
+                        Text("Install")
                     }
                     Spacer()
                 }
@@ -196,13 +196,19 @@ struct FileRow: View {
     @ViewBuilder private var details: some View {
         switch file.status {
         case .pending:
-            Text("Ждёт установки").font(.caption).foregroundColor(.secondary)
+            Text("Waiting to install").font(.caption).foregroundColor(.secondary)
         case .working:
-            Text("Распаковываю…").font(.caption).foregroundColor(.secondary)
+            Text("Unpacking…").font(.caption).foregroundColor(.secondary)
         case .done(let items):
             ForEach(items) { item in
-                Text("\(item.replaced ? "Обновлён" : "Установлен") \(item.kind.title): \(item.name)")
-                    .font(.caption).foregroundColor(.secondary)
+                Group {
+                    if item.replaced {
+                        Text("Updated \(item.kind.title): \(item.name)")
+                    } else {
+                        Text("Installed \(item.kind.title): \(item.name)")
+                    }
+                }
+                .font(.caption).foregroundColor(.secondary)
             }
         case .failed(let reason):
             Text(reason).font(.caption).foregroundColor(.red)

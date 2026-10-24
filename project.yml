@@ -1,6 +1,7 @@
 name: BedrockAddons
 options:
   bundleIdPrefix: com.cb93ka
+  developmentLanguage: en
   deploymentTarget:
     iOS: "15.0"
 packages:
@@ -18,7 +19,8 @@ targets:
     info:
       path: Sources/Info.plist
       properties:
-        CFBundleDisplayName: Аддоны MC
+        CFBundleDisplayName: MC Addons
+        CFBundleLocalizations: [en, ru]
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
