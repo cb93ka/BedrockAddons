@@ -1,0 +1,57 @@
+# Builds an unsigned IPA for LiveContainer and publishes it as the "latest" release.
+name: Build IPA
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ipa:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode
+        run: |
+          XC="$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)"
+          [ -n "$XC" ] && sudo xcode-select -s "$XC"
+          xcodebuild -version
+
+      - name: Project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild -project BedrockAddons.xcodeproj -scheme BedrockAddons -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} build 2>&1 | grep -E "error:|warning:|BUILD" || true
+          test -d build/Build/Products/Release-iphoneos/BedrockAddons.app
+
+      - name: Package
+        run: |
+          mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/BedrockAddons.app Payload/
+          zip -qry BedrockAddons.ipa Payload
+          ls -la BedrockAddons.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BedrockAddons-ipa
+          path: BedrockAddons.ipa
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest -y --cleanup-tag || true
+          gh release create latest BedrockAddons.ipa --title "Сборка ${{ github.run_number }}" \
+            --notes "Коммит ${GITHUB_SHA::7}. Неподписанная IPA для LiveContainer." --latest
